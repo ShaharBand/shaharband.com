@@ -15,8 +15,8 @@ export function CoursesCard() {
       <CardHeader>
         <CardTitle>Courses 👨‍🏫</CardTitle>
         <CardDescription>
-          A detailed look at the courses I've completed and the institutions
-          where I gained valuable knowledge.
+          A detailed look at the courses I&apos;ve completed and the
+          institutions where I gained valuable knowledge.
         </CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-y-4">
@@ -48,4 +48,3 @@ export function CoursesCard() {
     </Card>
   );
 }
-/* eslint-enable react/no-unescaped-entities */

@@ -14,7 +14,7 @@ export function AboutCard() {
           Hi! I am Shahar Band 👋
         </CardTitle>
         <CardDescription>
-          I'm a software developer from Israel. 🇮🇱
+          I&apos;m a software developer from Israel. 🇮🇱
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -35,4 +35,3 @@ export function AboutCard() {
     </Card>
   );
 }
-/* eslint-enable react/no-unescaped-entities */

@@ -16,7 +16,7 @@ export function ExperienceCard() {
         <CardTitle>Experience 💼</CardTitle>
         <CardDescription>
           My professional journey, showcasing the diverse roles and companies
-          I've contributed to.
+          I&apos;ve contributed to.
         </CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-y-4">
@@ -40,4 +40,3 @@ export function ExperienceCard() {
     </Card>
   );
 }
-/* eslint-enable react/no-unescaped-entities */
