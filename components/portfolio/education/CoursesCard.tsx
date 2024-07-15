@@ -48,3 +48,4 @@ export function CoursesCard() {
     </Card>
   );
 }
+/* eslint-enable react/no-unescaped-entities */

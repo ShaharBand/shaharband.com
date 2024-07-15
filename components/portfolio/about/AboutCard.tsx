@@ -35,3 +35,4 @@ export function AboutCard() {
     </Card>
   );
 }
+/* eslint-enable react/no-unescaped-entities */
