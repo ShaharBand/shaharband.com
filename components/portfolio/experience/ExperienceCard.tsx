@@ -8,6 +8,7 @@ import {
 import { ExperienceItem } from "./ExperienceItem";
 import IDFLogo from "../../../public/experience/IDF_logo.svg";
 import MinistryOfEducationLogo from "../../../public/experience/Ministry_of_Education_logo.svg";
+import MobileyeLogo from "../../../public/experience/Mobileye_logo.svg";
 
 export function ExperienceCard() {
   return (
@@ -20,6 +21,14 @@ export function ExperienceCard() {
         </CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-y-4">
+      <ExperienceItem
+          companyImage={MobileyeLogo.src}
+          companyName={"Mobileye"}
+          jobType={"Full Time"}
+          jobTitle={"Software Engineer"}
+          startDate={"Sep 2024"}
+          endDate={"Currently"}
+        />
         <ExperienceItem
           companyImage={IDFLogo.src}
           companyName={"Israel Defense Forces"}
@@ -34,7 +43,7 @@ export function ExperienceCard() {
           jobType={"Part Time"}
           jobTitle={"Computer Science Teacher"}
           startDate={"Sep 2023"}
-          endDate={"Present · 11 mos"}
+          endDate={"Sep 2024 · 1 year"}
         />
       </CardContent>
     </Card>
