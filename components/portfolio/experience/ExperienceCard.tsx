@@ -25,7 +25,7 @@ export function ExperienceCard() {
           companyImage={MobileyeLogo.src}
           companyName={"Mobileye"}
           jobType={"Full Time"}
-          jobTitle={"Software Engineer"}
+          jobTitle={"Data Engineer"} 
           startDate={"Sep 2024"}
           endDate={"Currently"}
         />
