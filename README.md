@@ -1,10 +1,10 @@
 <div align="center">
   <img style="width: 150px" src="img/logo.png"/>
+
+
+  # ShaharBand.com
+  [![GitHub repo size](https://img.shields.io/github/repo-size/ShaharBand/shaharband.com.svg)]([https://github.com/ShaharBand/mobileye-assignment](https://github.com/ShaharBand/shaharband.com))
 </div>
-
-# ShaharBand.com
-[![GitHub repo size](https://img.shields.io/github/repo-size/ShaharBand/shaharband.com.svg)]([https://github.com/ShaharBand/mobileye-assignment](https://github.com/ShaharBand/shaharband.com))
-
 
 <br>
 
