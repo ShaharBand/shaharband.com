@@ -10,6 +10,7 @@ import LinkedInIcon from "../../../public/socialmedia/LinkedIn_icon.svg";
 import XIcon from "../../../public/socialmedia/X_icon.svg";
 import GitHubIcon from "../../../public/socialmedia/GitHub_icon.svg";
 import GmailIcon from "../../../public/socialmedia/Gmail_icon.svg";
+import MediumIcon from "../../../public/socialmedia/Medium_icon.svg";
 
 export function SocialMediaCard() {
   return (
@@ -36,6 +37,11 @@ export function SocialMediaCard() {
           urlIcon={GitHubIcon.src}
           urlSource={"https://github.com/ShaharBand"}
           urlLabel={"ShaharBand"}
+        />
+        <SocialMediaItem
+          urlIcon={MediumIcon.src}
+          urlSource={"https://medium.com/@Shahar_69384"}
+          urlLabel={"Shahar_69384"}
         />
         <SocialMediaItem
           urlIcon={GmailIcon.src}
