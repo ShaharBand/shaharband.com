@@ -9,16 +9,20 @@ export function SocialMediaItem({
   urlLabel,
 }: UrlItemProps) {
   return (
-    <Link href={urlSource} target="_blank" className="flex items-center">
+    <Link
+      href={urlSource}
+      target="_blank"
+      className="flex items-center min-w-0"
+    >
       <Image
-        className="mr-4 max-h-12 max-w-12"
+        className="mr-4 w-5 h-5 object-contain flex-shrink-0"
         width={20}
         height={20}
         src={urlIcon}
         alt={`${urlLabel} image`}
       />
 
-      <p className="font-medium text-base">{urlLabel}</p>
+      <p className="font-medium text-base truncate">{urlLabel}</p>
     </Link>
   );
 }

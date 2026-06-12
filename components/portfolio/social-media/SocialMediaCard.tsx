@@ -22,7 +22,7 @@ export function SocialMediaCard() {
           profiles and contact information.
         </CardDescription>
       </CardHeader>
-      <CardContent className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <CardContent className="grid grid-cols-1 md:grid-cols-5 gap-4 overflow-hidden text-ellipsis flex-wrap: wrap">
         <SocialMediaItem
           urlIcon={LinkedInIcon.src}
           urlSource={"https://www.linkedin.com/in/shahar-band/"}
@@ -40,8 +40,8 @@ export function SocialMediaCard() {
         />
         <SocialMediaItem
           urlIcon={MediumIcon.src}
-          urlSource={"https://medium.com/@Shahar_69384"}
-          urlLabel={"Shahar_69384"}
+          urlSource={"https://medium.com/@Shahar_Band"}
+          urlLabel={"Shahar_Band"}
         />
         <SocialMediaItem
           urlIcon={GmailIcon.src}
