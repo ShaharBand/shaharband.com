@@ -11,7 +11,7 @@
 
 # 🚀 Description:
 
-This repository hosts my personal portfolio website showcasing my background.
+Personal site.
 
 
 <br>
@@ -22,8 +22,6 @@ This repository hosts my personal portfolio website showcasing my background.
 - 🚀 [**React**](https://github.com/facebook/react) for the frontend.
   - 📜 [TypeScript](https://github.com/microsoft/TypeScript): Enhances JavaScript by adding types.
   - ⚡ [NextJS](https://github.com/vercel/next.js): React framework for server-side rendering (SSR) and statically generated applications.
-  - 💅 [Tailwind CSS](https://github.com/tailwindlabs/tailwindcss): A utility-first CSS framework.
-  - 🎨 [Shadcn/UI](https://github.com/shadcn-ui/ui): for the frontend components.
 - 🏭 CD (continuous deployment) based on GitHub Actions.
 
 
