@@ -73,6 +73,28 @@ function easeOut(value: number) {
   return 1 - (1 - t) ** 1.8;
 }
 
+function cutShake(elapsed: number, cutMs: number) {
+  if (elapsed <= 0 || elapsed >= CUT_COUNT * cutMs) return "";
+  const index = Math.floor(elapsed / cutMs);
+  const cut = cuts[index];
+  if (!cut) return "";
+
+  const local = (elapsed - index * cutMs) / cutMs;
+  const dx = cut.x2 - cut.x1;
+  const dy = cut.y2 - cut.y1;
+  const len = Math.hypot(dx, dy) || 1;
+  const across = -dy / len;
+  const along = dx / len;
+  const nx = across * 0.9 + along * 0.28;
+  const ny = dx / len * 0.9 + dy / len * 0.28;
+  const normal = Math.hypot(nx, ny) || 1;
+  const decay = Math.exp(-local * 4.4);
+  const amp = (13 + cut.weight * 4) * decay * Math.sin(local * Math.PI * 7);
+  const x = (nx / normal) * amp;
+  const y = (ny / normal) * amp;
+  return `translate3d(${x.toFixed(2)}px, ${y.toFixed(2)}px, 0) rotate(${(amp * 0.04).toFixed(3)}deg)`;
+}
+
 function paintLine(line: SVGLineElement, length: number, progress: number) {
   if (progress <= 0) {
     line.style.opacity = "0";
@@ -196,8 +218,11 @@ export function Entrance({ children }: { children: React.ReactNode }) {
       flash.style.opacity = String(Math.max(0, burst));
 
       const reveal = smoothstep(clamp((elapsed - cutsEnd - 70) / revealMs, 0, 1));
+      const shake = cutShake(elapsed, cutMs);
+      const rise = reveal >= 1 ? "" : `translateY(${((1 - reveal) * 14).toFixed(2)}px)`;
       motion.style.opacity = String(reveal);
-      motion.style.transform = reveal >= 1 ? "" : `translateY(${(1 - reveal) * 14}px)`;
+      motion.style.transform = [shake, rise].filter(Boolean).join(" ");
+      overlay.style.transform = shake;
       veil.style.opacity = String(1 - reveal);
 
       if (elapsed < total) {

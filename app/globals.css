@@ -237,7 +237,7 @@ a:focus-visible {
 
 .slice-veil {
   position: absolute;
-  inset: 0;
+  inset: -48px;
   background: #07080c;
 }
 
