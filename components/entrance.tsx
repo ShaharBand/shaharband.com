@@ -64,8 +64,8 @@ function createCuts(count: number): Cut[] {
 const cuts = createCuts(CUT_COUNT);
 const DOT = 2.4;
 const GAP = 4.6;
-const GLOW_WIDTH = 13;
-const CORE_WIDTH = 2.6;
+const GLOW_WIDTH = 9.1;
+const CORE_WIDTH = 1.82;
 
 function clamp(value: number, min: number, max: number) {
   return Math.min(max, Math.max(min, value));
@@ -79,30 +79,6 @@ function smoothstep(value: number) {
 function easeOut(value: number) {
   const t = clamp(value, 0, 1);
   return 1 - (1 - t) ** 1.8;
-}
-
-function cutShake(elapsed: number, cutMs: number, gapMs: number) {
-  const cutsEnd = (CUT_COUNT - 1) * gapMs + cutMs;
-  if (elapsed <= 0 || elapsed >= cutsEnd) return "";
-  const index = Math.min(CUT_COUNT - 1, Math.floor(elapsed / gapMs));
-  const cut = cuts[index];
-  if (!cut) return "";
-
-  const local = (elapsed - index * gapMs) / cutMs;
-  if (local >= 1) return "";
-  const dx = cut.x2 - cut.x1;
-  const dy = cut.y2 - cut.y1;
-  const len = Math.hypot(dx, dy) || 1;
-  const across = -dy / len;
-  const along = dx / len;
-  const nx = across * 0.9 + along * 0.28;
-  const ny = dx / len * 0.9 + dy / len * 0.28;
-  const normal = Math.hypot(nx, ny) || 1;
-  const decay = Math.exp(-local * 4.4);
-  const amp = (13 + cut.weight * 4) * decay * Math.sin(local * Math.PI * 7);
-  const x = (nx / normal) * amp;
-  const y = (ny / normal) * amp;
-  return `translate3d(${x.toFixed(2)}px, ${y.toFixed(2)}px, 0) rotate(${(amp * 0.04).toFixed(3)}deg)`;
 }
 
 function paintLine(line: SVGLineElement, length: number, progress: number) {
@@ -260,12 +236,35 @@ export function Entrance({ children }: { children: React.ReactNode }) {
       placeShard(shard);
     };
 
+    let shakeBorn = -1;
+    let shakeX = 0;
+    let shakeY = 0;
+
+    const armShake = (push: Point) => {
+      const length = Math.hypot(push.x, push.y) || 1;
+      shakeBorn = elapsed;
+      shakeX = push.x / length;
+      shakeY = push.y / length;
+    };
+
+    const shakeTransform = () => {
+      if (shakeBorn < 0) return "";
+      const local = (elapsed - shakeBorn) / 120;
+      if (local < 0 || local >= 1) return "";
+      const decay = Math.exp(-local * 4.2);
+      const amp = 15 * decay * Math.cos(local * Math.PI * 4);
+      const x = shakeX * amp;
+      const y = shakeY * amp;
+      return `translate3d(${x.toFixed(2)}px, ${y.toFixed(2)}px, 0) rotate(${(amp * 0.04).toFixed(3)}deg)`;
+    };
+
     const releaseShard = (shard: Shard, push: Point, spin: number) => {
       shard.falling = true;
       shard.vx = push.x * (2.6 + random() * 1.8);
       shard.vy = 1.5 + random() * 1.6;
       shard.vr = spin;
       placeShard(shard);
+      armShake(push);
     };
 
     let shards = [
@@ -335,15 +334,32 @@ export function Entrance({ children }: { children: React.ReactNode }) {
 
     const tickMs = 10;
     const cutMs = 100;
-    const gapMs = 90;
-    const fallMs = 720;
-    const cutsEnd = (CUT_COUNT - 1) * gapMs + cutMs;
+    const cutsEnd = 1500;
+    const gapMs = (cutsEnd - cutMs) / (CUT_COUNT - 1);
+    const fallMs = 640;
     const total = cutsEnd + fallMs;
     const opened = Array.from({ length: CUT_COUNT }, () => false);
+    const skipped = Array.from({ length: CUT_COUNT }, () => false);
     let shattered = false;
+    let cutsHalted = false;
     let elapsed = 0;
     let timer = 0;
     let cancelled = false;
+
+    const glassRemains = () => shards.some((shard) => !shard.falling);
+
+    const cutHitsGlass = (index: number) => {
+      const cut = cuts[index];
+      const a = { x: (cut.x1 / 100) * width, y: (cut.y1 / 100) * height };
+      const b = { x: (cut.x2 / 100) * width, y: (cut.y2 / 100) * height };
+      return shards.some((shard) => !shard.falling && splitPolygon(shard.points, a, b));
+    };
+
+    const hideLine = (pair: { glow: SVGLineElement | null; core: SVGLineElement | null }) => {
+      if (!pair.glow || !pair.core) return;
+      pair.glow.style.opacity = "0";
+      pair.core.style.opacity = "0";
+    };
 
     const later = (run: () => void, ms: number) => {
       timer = window.setTimeout(() => {
@@ -354,28 +370,51 @@ export function Entrance({ children }: { children: React.ReactNode }) {
     const tick = () => {
       elapsed += tickMs;
 
+      if (!cutsHalted && !glassRemains()) cutsHalted = true;
+
       pairs.forEach((pair, index) => {
         if (!pair.glow || !pair.core) return;
-        const progress = clamp((elapsed - index * gapMs) / cutMs, 0, 1);
+        const start = index * gapMs;
+        const age = elapsed - (start + cutMs);
+
+        if (cutsHalted || skipped[index]) {
+          if (!opened[index]) hideLine(pair);
+          else if (age > 0) {
+            const opacity = String(1 - clamp(age / 80, 0, 1));
+            pair.glow.style.opacity = opacity;
+            pair.core.style.opacity = opacity;
+          }
+          return;
+        }
+
+        if (elapsed >= start && !opened[index] && !cutHitsGlass(index)) {
+          skipped[index] = true;
+          hideLine(pair);
+          if (!glassRemains()) cutsHalted = true;
+          return;
+        }
+
+        const progress = clamp((elapsed - start) / cutMs, 0, 1);
         for (const line of [pair.glow, pair.core]) {
           if (!line) continue;
           paintLine(line, cuts[index].length, progress);
         }
-        const age = elapsed - (index * gapMs + cutMs);
         if (age > 0) {
-          const opacity = String(1 - clamp(age / 90, 0, 1));
+          const opacity = String(1 - clamp(age / 80, 0, 1));
           pair.glow.style.opacity = opacity;
           pair.core.style.opacity = opacity;
         }
-        if (!opened[index] && elapsed >= index * gapMs + cutMs) {
+        if (!opened[index] && elapsed >= start + cutMs) {
           opened[index] = true;
           openCut(index);
+          if (!glassRemains()) cutsHalted = true;
         }
       });
 
-      if (!shattered && elapsed >= cutsEnd) {
+      if (!shattered && !cutsHalted && elapsed >= cutsEnd && glassRemains()) {
         shattered = true;
         shatterRest();
+        cutsHalted = true;
       }
 
       for (const shard of shards) {
@@ -387,7 +426,7 @@ export function Entrance({ children }: { children: React.ReactNode }) {
         placeShard(shard);
       }
 
-      const shake = cutShake(elapsed, cutMs, gapMs);
+      const shake = shakeTransform();
       motion.style.transform = shake;
       overlay.style.transform = shake;
 
