@@ -12,6 +12,7 @@ type Cut = {
   x2: number;
   y2: number;
   length: number;
+  weight: number;
 };
 
 const EDGES: Edge[] = ["top", "right", "bottom", "left"];
@@ -47,6 +48,7 @@ function createCuts(count: number): Cut[] {
       x2: end.x,
       y2: end.y,
       length: Math.hypot(end.x - start.x, end.y - start.y),
+      weight: 0.68 + random() * 0.72,
     };
   });
 }
@@ -54,6 +56,22 @@ function createCuts(count: number): Cut[] {
 const cuts = createCuts(CUT_COUNT);
 const DOT = 2.4;
 const GAP = 4.6;
+const GLOW_WIDTH = 13;
+const CORE_WIDTH = 2.6;
+
+function clamp(value: number, min: number, max: number) {
+  return Math.min(max, Math.max(min, value));
+}
+
+function smoothstep(value: number) {
+  const t = clamp(value, 0, 1);
+  return t * t * (3 - 2 * t);
+}
+
+function easeOut(value: number) {
+  const t = clamp(value, 0, 1);
+  return 1 - (1 - t) ** 1.8;
+}
 
 function paintLine(line: SVGLineElement, length: number, progress: number) {
   if (progress <= 0) {
@@ -71,10 +89,9 @@ function paintLine(line: SVGLineElement, length: number, progress: number) {
     return;
   }
 
-  const drawn = length * progress;
+  const drawn = length * easeOut(progress);
   const hidden = Math.max(0, length - drawn);
-  // Dotted while the cut is still traveling, then this cut closes on its own.
-  const solidify = Math.max(0, Math.min(1, (progress - 0.42) / 0.58));
+  const solidify = smoothstep(clamp((progress - 0.34) / 0.66, 0, 1));
   const gap = GAP * (1 - solidify);
   const dash = DOT + GAP * solidify;
 
@@ -133,12 +150,13 @@ export function Entrance({ children }: { children: React.ReactNode }) {
       return;
     }
 
-    const framesPerCut = 6;
-    const flashFrames = 4;
-    const revealFrames = 5;
-    const cutsEnd = CUT_COUNT * framesPerCut;
-    const total = cutsEnd + flashFrames + revealFrames;
-    let step = 0;
+    const tickMs = 8;
+    const cutMs = 112;
+    const flashMs = 150;
+    const revealMs = 180;
+    const cutsEnd = CUT_COUNT * cutMs;
+    const total = cutsEnd + flashMs + revealMs;
+    let elapsed = 0;
     let timer = 0;
     let cancelled = false;
 
@@ -149,42 +167,41 @@ export function Entrance({ children }: { children: React.ReactNode }) {
     };
 
     const tick = () => {
-      step += 1;
+      elapsed += tickMs;
 
       pairs.forEach((pair, index) => {
         if (!pair.glow || !pair.core) return;
-        const start = index * framesPerCut;
-        const progress = Math.min(1, Math.max(0, (step - start) / framesPerCut));
+        const progress = clamp((elapsed - index * cutMs) / cutMs, 0, 1);
         for (const line of [pair.glow, pair.core]) {
           if (!line) continue;
           paintLine(line, cuts[index].length, progress);
         }
       });
 
-      const fading = Math.min(1, Math.max(0, (step - cutsEnd) / flashFrames));
+      const fading = clamp((elapsed - cutsEnd) / flashMs, 0, 1);
       if (fading > 0) {
         pairs.forEach((pair) => {
           if (!pair.glow || !pair.core) return;
-          const opacity = String(1 - fading);
+          const opacity = String(1 - smoothstep(fading));
           pair.glow.style.opacity = opacity;
           pair.core.style.opacity = opacity;
         });
       }
 
       let burst = 0;
-      if (step >= cutsEnd && step <= cutsEnd + flashFrames) {
-        const flashT = (step - cutsEnd) / flashFrames;
-        burst = flashT < 0.3 ? flashT / 0.3 : 1 - (flashT - 0.3) / 0.7;
+      if (elapsed >= cutsEnd && elapsed <= cutsEnd + flashMs) {
+        const flashT = (elapsed - cutsEnd) / flashMs;
+        burst = flashT < 0.28 ? flashT / 0.28 : 1 - (flashT - 0.28) / 0.72;
       }
       flash.style.opacity = String(Math.max(0, burst));
 
-      const reveal = Math.min(1, Math.max(0, (step - cutsEnd - 3) / revealFrames));
+      const reveal = smoothstep(clamp((elapsed - cutsEnd - 70) / revealMs, 0, 1));
       motion.style.opacity = String(reveal);
       motion.style.transform = reveal >= 1 ? "" : `translateY(${(1 - reveal) * 14}px)`;
       veil.style.opacity = String(1 - reveal);
 
-      if (step < total) {
-        later(tick, 11);
+      if (elapsed < total) {
+        later(tick, tickMs);
         return;
       }
 
@@ -193,7 +210,7 @@ export function Entrance({ children }: { children: React.ReactNode }) {
       overlay.remove();
     };
 
-    later(tick, 12);
+    later(tick, tickMs);
     return () => {
       cancelled = true;
       window.clearTimeout(timer);
@@ -210,8 +227,22 @@ export function Entrance({ children }: { children: React.ReactNode }) {
         <svg className="slice-seam" viewBox="0 0 100 100" preserveAspectRatio="none">
           {cuts.map((cut, index) => (
             <g key={index} data-cut={index}>
-              <line className="slice-glow" x1={cut.x1} y1={cut.y1} x2={cut.x2} y2={cut.y2} />
-              <line className="slice-core" x1={cut.x1} y1={cut.y1} x2={cut.x2} y2={cut.y2} />
+              <line
+                className="slice-glow"
+                x1={cut.x1}
+                y1={cut.y1}
+                x2={cut.x2}
+                y2={cut.y2}
+                style={{ strokeWidth: GLOW_WIDTH * cut.weight }}
+              />
+              <line
+                className="slice-core"
+                x1={cut.x1}
+                y1={cut.y1}
+                x2={cut.x2}
+                y2={cut.y2}
+                style={{ strokeWidth: CORE_WIDTH * cut.weight }}
+              />
             </g>
           ))}
         </svg>
