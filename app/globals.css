@@ -122,6 +122,18 @@ a:focus-visible {
   padding: 1.35rem 1.4rem 1.45rem;
 }
 
+.panel.is-cut {
+  background: transparent;
+  border-color: transparent;
+  clip-path: none;
+  backdrop-filter: none;
+}
+
+.panel.is-cut .panel-col {
+  background: rgba(10, 12, 16, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+}
+
 .panel-col + .panel-col {
   border-top: 1px solid var(--line);
 }
@@ -261,11 +273,33 @@ a:focus-visible {
 }
 
 .slice-seam line {
-  stroke: #f7f8fa;
-  stroke-width: 2.5;
+  fill: none;
+  stroke-linecap: square;
   vector-effect: non-scaling-stroke;
   stroke-dasharray: 110;
   stroke-dashoffset: 110;
+}
+
+.slice-glow {
+  stroke: rgba(255, 255, 255, 0.45);
+  stroke-width: 14;
+}
+
+.slice-core {
+  stroke: #ffffff;
+  stroke-width: 3;
+}
+
+.slice-flash {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    closest-side at 50% 46%,
+    rgba(255, 255, 255, 0.95),
+    rgba(255, 255, 255, 0.28) 46%,
+    transparent 72%
+  );
+  opacity: 0;
 }
 
 @media (min-width: 880px) {
