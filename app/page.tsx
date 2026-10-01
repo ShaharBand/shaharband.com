@@ -17,10 +17,6 @@ export default function Home() {
             unoptimized
           />
         </div>
-        <p className="status">
-          <i />
-          {profile.status}
-        </p>
         <h1>
           <span>Shahar</span>
           <span>Band</span>

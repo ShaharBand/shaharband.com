@@ -1,7 +1,6 @@
 export const profile = {
   name: "Shahar Band",
   subtitle: "Building something new.",
-  status: "In stealth",
   image: "https://github.com/shaharband.png",
   writingHref: "https://medium.com/@Shahar_Band",
   articles: [
