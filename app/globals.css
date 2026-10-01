@@ -253,8 +253,9 @@ a:focus-visible {
   fill: none;
   stroke-linecap: butt;
   vector-effect: non-scaling-stroke;
-  stroke-dasharray: 8 10;
-  stroke-dashoffset: 0;
+  stroke-dasharray: 160;
+  stroke-dashoffset: 160;
+  opacity: 0;
 }
 
 .slice-glow {
