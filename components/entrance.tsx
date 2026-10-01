@@ -3,6 +3,15 @@
 import { useEffect, useRef } from "react";
 
 const SPLIT = 34;
+const DASH = 8;
+const GAP = 10;
+
+function dashPattern(progress: number) {
+  const closed = Math.min(1, Math.max(0, progress));
+  const dash = DASH + GAP * closed;
+  const gap = GAP * (1 - closed);
+  return `${dash} ${gap}`;
+}
 
 export function Entrance({ children }: { children: React.ReactNode }) {
   const motionRef = useRef<HTMLDivElement>(null);
@@ -24,9 +33,8 @@ export function Entrance({ children }: { children: React.ReactNode }) {
     if (!motion || !overlay || !left || !right || !glow || !seam || !flash) return;
 
     const panel = motion.querySelector<HTMLElement>(".panel");
-    const columns = Array.from(motion.querySelectorAll<HTMLElement>(".panel-col"));
-    const leftCol = columns[0];
-    const rightCol = columns[1];
+    const leftCol = motion.querySelector<HTMLElement>('[data-cut-side="start"]');
+    const rightCol = motion.querySelector<HTMLElement>('[data-cut-side="end"]');
     const stacked = window.matchMedia("(max-width: 879px)").matches;
 
     const placeColumns = (amount: number) => {
@@ -42,13 +50,11 @@ export function Entrance({ children }: { children: React.ReactNode }) {
 
     const clearCut = () => {
       panel?.classList.remove("is-cut");
-      placeColumns(0);
       if (leftCol) leftCol.style.transform = "";
       if (rightCol) rightCol.style.transform = "";
     };
 
-    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (reduce) {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
       clearCut();
       overlay.remove();
       return;
@@ -56,9 +62,11 @@ export function Entrance({ children }: { children: React.ReactNode }) {
 
     panel?.classList.add("is-cut");
 
-    const drawFrames = 14;
-    const slideFrames = 32;
-    const total = drawFrames + slideFrames;
+    const lines = [glow, seam];
+    const holdFrames = 8;
+    const closeFrames = 12;
+    const slideFrames = 28;
+    const total = holdFrames + closeFrames + slideFrames;
     let step = 0;
     let timer = 0;
     let cancelled = false;
@@ -69,10 +77,20 @@ export function Entrance({ children }: { children: React.ReactNode }) {
       }, ms);
     };
 
+    const paintLine = (progress: number, opacity: number) => {
+      const pattern = dashPattern(progress);
+      for (const line of lines) {
+        line.style.strokeDasharray = pattern;
+        line.style.strokeDashoffset = "0";
+        line.style.opacity = String(opacity);
+      }
+    };
+
     const tick = () => {
       step += 1;
-      const draw = Math.min(1, step / drawFrames);
-      const slideT = Math.min(1, Math.max(0, (step - drawFrames) / slideFrames));
+
+      const closeT = Math.min(1, Math.max(0, (step - holdFrames) / closeFrames));
+      const slideT = Math.min(1, Math.max(0, (step - holdFrames - closeFrames) / slideFrames));
       const eased = 1 - Math.pow(1 - slideT, 3);
       const shift = eased * 118;
 
@@ -80,21 +98,18 @@ export function Entrance({ children }: { children: React.ReactNode }) {
       right.style.transform = `translateX(${shift}%)`;
 
       const lineOpacity = slideT < 0.62 ? 1 : Math.max(0, 1 - (slideT - 0.62) / 0.38);
-      const dash = String(110 * (1 - draw));
-      glow.style.strokeDashoffset = dash;
-      seam.style.strokeDashoffset = dash;
-      glow.style.opacity = String(lineOpacity);
-      seam.style.opacity = String(lineOpacity);
+      paintLine(closeT, lineOpacity);
 
       let burst = 0;
-      if (step >= drawFrames && step <= drawFrames + 7) {
-        const f = (step - drawFrames) / 7;
-        burst = f < 0.25 ? f / 0.25 : 1 - (f - 0.25) / 0.75;
+      const flashStart = holdFrames + closeFrames;
+      if (step >= flashStart && step <= flashStart + 7) {
+        const flashT = (step - flashStart) / 7;
+        burst = flashT < 0.25 ? flashT / 0.25 : 1 - (flashT - 0.25) / 0.75;
       }
       flash.style.opacity = String(Math.max(0, burst));
 
-      const split = draw * SPLIT * 0.35 + eased * SPLIT * 0.65;
-      placeColumns(Math.max(split, draw * 10));
+      const split = closeT * SPLIT * 0.35 + eased * SPLIT * 0.65;
+      placeColumns(split);
 
       if (step < total) {
         later(tick, 30);
@@ -107,8 +122,7 @@ export function Entrance({ children }: { children: React.ReactNode }) {
       const settle = () => {
         back += 1;
         const t = Math.min(1, back / settleFrames);
-        const remain = SPLIT * (1 - (1 - Math.pow(1 - t, 3)));
-        placeColumns(remain);
+        placeColumns(SPLIT * Math.pow(1 - t, 3));
         if (back < settleFrames) {
           later(settle, 26);
           return;
@@ -139,9 +153,6 @@ export function Entrance({ children }: { children: React.ReactNode }) {
           <line ref={seamRef} className="slice-core" x1="66" y1="0" x2="34" y2="100" />
         </svg>
       </div>
-      <noscript>
-        <style>{`.slice{display:none}.panel.is-cut{background:rgba(8,9,12,0.72);border-color:rgba(255,255,255,0.16);clip-path:polygon(0 0,calc(100% - 18px) 0,100% 18px,100% 100%,18px 100%,0 calc(100% - 18px))}.panel.is-cut .panel-col{background:transparent;border:0;transform:none}`}</style>
-      </noscript>
     </>
   );
 }

@@ -274,10 +274,10 @@ a:focus-visible {
 
 .slice-seam line {
   fill: none;
-  stroke-linecap: square;
+  stroke-linecap: butt;
   vector-effect: non-scaling-stroke;
-  stroke-dasharray: 110;
-  stroke-dashoffset: 110;
+  stroke-dasharray: 8 10;
+  stroke-dashoffset: 0;
 }
 
 .slice-glow {
