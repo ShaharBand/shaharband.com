@@ -13,10 +13,7 @@ export function Identity() {
           unoptimized
         />
       </div>
-      <h1>
-        <span>Shahar</span>
-        <span>Band</span>
-      </h1>
+      <h1>Shahar Band</h1>
       <p className="subtitle">Building something new.</p>
     </section>
   );
