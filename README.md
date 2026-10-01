@@ -1,6 +1,6 @@
 # ShaharBand.com
 
-Personal site for Shahar Band. It is a single page: name, photo, “Building something new.”, writing, and contact.
+Personal site.
 
 ## Stack
 
