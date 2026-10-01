@@ -52,6 +52,60 @@ function createCuts(count: number): Cut[] {
 }
 
 const cuts = createCuts(CUT_COUNT);
+const DOT = 2.4;
+const GAP = 4.6;
+
+function paintLine(line: SVGLineElement, length: number, progress: number) {
+  if (progress <= 0) {
+    line.style.opacity = "0";
+    line.style.strokeDasharray = `0 ${length}`;
+    line.style.strokeDashoffset = "0";
+    return;
+  }
+
+  line.style.opacity = "1";
+  line.style.strokeDashoffset = "0";
+
+  if (progress >= 1) {
+    line.style.strokeDasharray = `${length} 0`;
+    return;
+  }
+
+  const drawn = length * progress;
+  const hidden = Math.max(0, length - drawn);
+  // Dotted while the cut is still traveling, then this cut closes on its own.
+  const solidify = Math.max(0, Math.min(1, (progress - 0.42) / 0.58));
+  const gap = GAP * (1 - solidify);
+  const dash = DOT + GAP * solidify;
+
+  if (gap <= 0.08) {
+    line.style.strokeDasharray = `${drawn.toFixed(2)} ${hidden.toFixed(2)}`;
+    return;
+  }
+
+  const parts: number[] = [];
+  let covered = 0;
+
+  while (covered < drawn - 0.04 && parts.length < 120) {
+    const dashLength = Math.min(dash, drawn - covered);
+    parts.push(dashLength);
+    covered += dashLength;
+    if (covered >= drawn - 0.04) break;
+    const gapLength = Math.min(gap, drawn - covered);
+    if (gapLength <= 0.04) break;
+    parts.push(gapLength);
+    covered += gapLength;
+  }
+
+  const remainder = length - covered;
+  if (remainder > 0.04) {
+    if (parts.length % 2 === 1) parts.push(remainder);
+    else if (parts.length > 0) parts[parts.length - 1] += remainder;
+    else parts.push(0, remainder);
+  }
+
+  line.style.strokeDasharray = parts.map((part) => part.toFixed(2)).join(" ");
+}
 
 export function Entrance({ children }: { children: React.ReactNode }) {
   const motionRef = useRef<HTMLDivElement>(null);
@@ -79,9 +133,9 @@ export function Entrance({ children }: { children: React.ReactNode }) {
       return;
     }
 
-    const framesPerCut = 8;
-    const flashFrames = 8;
-    const revealFrames = 10;
+    const framesPerCut = 6;
+    const flashFrames = 4;
+    const revealFrames = 5;
     const cutsEnd = CUT_COUNT * framesPerCut;
     const total = cutsEnd + flashFrames + revealFrames;
     let step = 0;
@@ -101,12 +155,9 @@ export function Entrance({ children }: { children: React.ReactNode }) {
         if (!pair.glow || !pair.core) return;
         const start = index * framesPerCut;
         const progress = Math.min(1, Math.max(0, (step - start) / framesPerCut));
-        const length = cuts[index].length;
-        const drawn = length * (1 - progress);
         for (const line of [pair.glow, pair.core]) {
-          line.style.strokeDasharray = String(length);
-          line.style.strokeDashoffset = String(progress === 0 ? length : drawn);
-          line.style.opacity = progress === 0 ? "0" : "1";
+          if (!line) continue;
+          paintLine(line, cuts[index].length, progress);
         }
       });
 
@@ -133,7 +184,7 @@ export function Entrance({ children }: { children: React.ReactNode }) {
       veil.style.opacity = String(1 - reveal);
 
       if (step < total) {
-        later(tick, 24);
+        later(tick, 11);
         return;
       }
 
@@ -142,7 +193,7 @@ export function Entrance({ children }: { children: React.ReactNode }) {
       overlay.remove();
     };
 
-    later(tick, 40);
+    later(tick, 12);
     return () => {
       cancelled = true;
       window.clearTimeout(timer);
