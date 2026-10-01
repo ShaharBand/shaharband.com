@@ -1,6 +1,6 @@
 export function ContactCard() {
   return (
-    <div className="panel-col" data-cut-side="end">
+    <div className="panel-col">
       <h2>Contact</h2>
       <ul className="contact-list">
         <li>

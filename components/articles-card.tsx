@@ -1,6 +1,6 @@
 export function ArticlesCard() {
   return (
-    <div className="panel-col" data-cut-side="start">
+    <div className="panel-col">
       <h2>Articles</h2>
       <a
         className="article"

@@ -122,18 +122,6 @@ a:focus-visible {
   padding: 1.35rem 1.4rem 1.45rem;
 }
 
-.panel.is-cut {
-  background: transparent;
-  border-color: transparent;
-  clip-path: none;
-  backdrop-filter: none;
-}
-
-.panel.is-cut .panel-col {
-  background: rgba(10, 12, 16, 0.9);
-  border: 1px solid rgba(255, 255, 255, 0.16);
-}
-
 .panel-col + .panel-col {
   border-top: 1px solid var(--line);
 }
@@ -247,21 +235,10 @@ a:focus-visible {
   pointer-events: none;
 }
 
-.slice-panel {
+.slice-veil {
   position: absolute;
   inset: 0;
-  background: #2a3140;
-  will-change: transform;
-}
-
-.slice-left {
-  clip-path: polygon(0 0, 66% 0, 34% 100%, 0 100%);
-  box-shadow: inset -1px 0 0 #f4f6f8;
-}
-
-.slice-right {
-  clip-path: polygon(66% 0, 100% 0, 100% 100%, 34% 100%);
-  box-shadow: inset 1px 0 0 #f4f6f8;
+  background: #07080c;
 }
 
 .slice-seam {
