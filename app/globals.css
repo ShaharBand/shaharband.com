@@ -275,13 +275,15 @@ a:focus-visible {
 }
 
 .slice-glow {
-  stroke: rgba(255, 255, 255, 0.45);
-  stroke-width: 14;
+  stroke: rgba(255, 255, 255, 0.85);
+  stroke-width: 9.8;
+  filter: blur(3px) drop-shadow(0 0 6px rgba(255, 255, 255, 0.9));
 }
 
 .slice-core {
   stroke: #ffffff;
-  stroke-width: 3;
+  stroke-width: 2.1;
+  filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.95));
 }
 
 @media (min-width: 880px) {
