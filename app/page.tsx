@@ -1,17 +1,11 @@
 import Image from "next/image";
+import { Entrance } from "@/components/entrance";
 import { profile } from "@/lib/profile";
 
 export default function Home() {
   return (
+    <Entrance>
     <main className="stage">
-      <div className="slice" aria-hidden="true">
-        <div className="slice-panel slice-left" />
-        <div className="slice-panel slice-right" />
-        <svg className="slice-seam" viewBox="0 0 100 100" preserveAspectRatio="none">
-          <line x1="66" y1="0" x2="34" y2="100" />
-        </svg>
-      </div>
-
       <section className="identity">
         <div className="portrait">
           <Image
@@ -27,7 +21,10 @@ export default function Home() {
           <i />
           {profile.status}
         </p>
-        <h1>{profile.name}</h1>
+        <h1>
+          <span>Shahar</span>
+          <span>Band</span>
+        </h1>
         <p className="subtitle">{profile.subtitle}</p>
       </section>
 
@@ -70,5 +67,6 @@ export default function Home() {
         </div>
       </section>
     </main>
+    </Entrance>
   );
 }
