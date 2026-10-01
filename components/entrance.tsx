@@ -10,7 +10,7 @@ import {
   type Point,
 } from "@/components/glass-shards";
 
-const CUT_COUNT = 20;
+const CUT_COUNT = 24;
 
 type Edge = "top" | "right" | "bottom" | "left";
 
