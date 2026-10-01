@@ -1,6 +1,14 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import {
+  fanTriangles,
+  outwardPush,
+  polygonArea,
+  polygonCentroid,
+  splitPolygon,
+  type Point,
+} from "@/components/glass-shards";
 
 const CUT_COUNT = 20;
 
@@ -148,18 +156,42 @@ function paintLine(line: SVGLineElement, length: number, progress: number) {
   line.style.strokeDasharray = parts.map((part) => part.toFixed(2)).join(" ");
 }
 
+const SVG_NS = "http://www.w3.org/2000/svg";
+
+type Shard = {
+  points: Point[];
+  cx: number;
+  cy: number;
+  falling: boolean;
+  x: number;
+  y: number;
+  rot: number;
+  vx: number;
+  vy: number;
+  vr: number;
+  group: SVGGElement;
+};
+
+function placeShard(shard: Shard) {
+  shard.group.setAttribute(
+    "transform",
+    `translate(${(shard.cx + shard.x).toFixed(2)} ${(shard.cy + shard.y).toFixed(2)}) rotate(${shard.rot.toFixed(2)})`,
+  );
+  shard.group.setAttribute("data-falling", shard.falling ? "1" : "0");
+}
+
 export function Entrance({ children }: { children: React.ReactNode }) {
   const motionRef = useRef<HTMLDivElement>(null);
   const overlayRef = useRef<HTMLDivElement>(null);
   const veilRef = useRef<HTMLDivElement>(null);
-  const flashRef = useRef<HTMLDivElement>(null);
+  const glassRef = useRef<SVGSVGElement>(null);
 
   useEffect(() => {
     const motion = motionRef.current;
     const overlay = overlayRef.current;
     const veil = veilRef.current;
-    const flash = flashRef.current;
-    if (!motion || !overlay || !veil || !flash) return;
+    const glass = glassRef.current;
+    if (!motion || !overlay || !veil || !glass) return;
 
     const pairs = Array.from(overlay.querySelectorAll<SVGGElement>("[data-cut]")).map(
       (group) => ({
@@ -174,13 +206,141 @@ export function Entrance({ children }: { children: React.ReactNode }) {
       return;
     }
 
+    const width = overlay.clientWidth || window.innerWidth;
+    const height = overlay.clientHeight || window.innerHeight;
+    glass.replaceChildren();
+    glass.setAttribute("viewBox", `0 0 ${width} ${height}`);
+    const random = createRandom(0xa11ce);
+
+    const makeShard = (points: Point[]): Shard => {
+      const center = polygonCentroid(points);
+      const group = document.createElementNS(SVG_NS, "g");
+      const polygon = document.createElementNS(SVG_NS, "polygon");
+      polygon.setAttribute("class", "slice-shard");
+      polygon.setAttribute(
+        "points",
+        points
+          .map((point) => `${(point.x - center.x).toFixed(2)},${(point.y - center.y).toFixed(2)}`)
+          .join(" "),
+      );
+      group.appendChild(polygon);
+      glass.appendChild(group);
+      const shard: Shard = {
+        points,
+        cx: center.x,
+        cy: center.y,
+        falling: false,
+        x: 0,
+        y: 0,
+        rot: 0,
+        vx: 0,
+        vy: 0,
+        vr: 0,
+        group,
+      };
+      placeShard(shard);
+      return shard;
+    };
+
+    const reshapeShard = (shard: Shard, points: Point[]) => {
+      const center = polygonCentroid(points);
+      shard.points = points;
+      shard.cx = center.x;
+      shard.cy = center.y;
+      shard.x = 0;
+      shard.y = 0;
+      shard.rot = 0;
+      const polygon = shard.group.querySelector("polygon");
+      polygon?.setAttribute(
+        "points",
+        points
+          .map((point) => `${(point.x - center.x).toFixed(2)},${(point.y - center.y).toFixed(2)}`)
+          .join(" "),
+      );
+      placeShard(shard);
+    };
+
+    const releaseShard = (shard: Shard, push: Point, spin: number) => {
+      shard.falling = true;
+      shard.vx = push.x * (2.6 + random() * 1.8);
+      shard.vy = 1.5 + random() * 1.6;
+      shard.vr = spin;
+      placeShard(shard);
+    };
+
+    let shards = [
+      makeShard([
+        { x: 0, y: 0 },
+        { x: width, y: 0 },
+        { x: width, y: height },
+        { x: 0, y: height },
+      ]),
+    ];
+    veil.style.display = "none";
+
+    const openCut = (index: number) => {
+      const cut = cuts[index];
+      const a = { x: (cut.x1 / 100) * width, y: (cut.y1 / 100) * height };
+      const b = { x: (cut.x2 / 100) * width, y: (cut.y2 / 100) * height };
+      const next: Shard[] = [];
+      for (const shard of shards) {
+        if (shard.falling) {
+          next.push(shard);
+          continue;
+        }
+        const parts = splitPolygon(shard.points, a, b);
+        if (!parts) {
+          next.push(shard);
+          continue;
+        }
+        const [first, second] = parts;
+        const firstIsSmaller = Math.abs(polygonArea(first)) < Math.abs(polygonArea(second));
+        const small = firstIsSmaller ? first : second;
+        const large = firstIsSmaller ? second : first;
+        reshapeShard(shard, large);
+        const cutOut = makeShard(small);
+        const origin = polygonCentroid(small);
+        releaseShard(cutOut, outwardPush(a, b, origin, 1), (random() - 0.5) * 2.6);
+        next.push(shard, cutOut);
+      }
+      shards = next;
+    };
+
+    const shatterRest = () => {
+      const next: Shard[] = [];
+      for (const shard of shards) {
+        if (shard.falling) {
+          next.push(shard);
+          continue;
+        }
+        const origin = { x: shard.cx, y: shard.cy };
+        shard.group.remove();
+        for (const triangle of fanTriangles(shard.points)) {
+          const piece = makeShard(triangle);
+          const center = polygonCentroid(triangle);
+          const dx = center.x - origin.x;
+          const dy = center.y - origin.y;
+          const length = Math.hypot(dx, dy) || 1;
+          releaseShard(
+            piece,
+            { x: dx / length, y: dy / length },
+            (random() - 0.5) * 3.4,
+          );
+          piece.vy += 0.8;
+          next.push(piece);
+        }
+      }
+      shards = next;
+    };
+
     const tickMs = 10;
     const cutMs = 100;
     const gapMs = 90;
-    const flashMs = 140;
-    const revealMs = 160;
+    const fallMs = 720;
     const cutsEnd = (CUT_COUNT - 1) * gapMs + cutMs;
-    const total = cutsEnd + flashMs + revealMs;
+    const total = cutsEnd + fallMs;
+    const opened = Array.from({ length: CUT_COUNT }, () => false);
+    let shattered = false;
     let elapsed = 0;
     let timer = 0;
     let cancelled = false;
@@ -201,39 +361,41 @@ export function Entrance({ children }: { children: React.ReactNode }) {
           if (!line) continue;
           paintLine(line, cuts[index].length, progress);
         }
-      });
-
-      const fading = clamp((elapsed - cutsEnd) / flashMs, 0, 1);
-      if (fading > 0) {
-        pairs.forEach((pair) => {
-          if (!pair.glow || !pair.core) return;
-          const opacity = String(1 - smoothstep(fading));
+        const age = elapsed - (index * gapMs + cutMs);
+        if (age > 0) {
+          const opacity = String(1 - clamp(age / 90, 0, 1));
           pair.glow.style.opacity = opacity;
           pair.core.style.opacity = opacity;
-        });
+        }
+        if (!opened[index] && elapsed >= index * gapMs + cutMs) {
+          opened[index] = true;
+          openCut(index);
+        }
+      });
+
+      if (!shattered && elapsed >= cutsEnd) {
+        shattered = true;
+        shatterRest();
       }
 
-      let burst = 0;
-      if (elapsed >= cutsEnd && elapsed <= cutsEnd + flashMs) {
-        const flashT = (elapsed - cutsEnd) / flashMs;
-        burst = flashT < 0.28 ? flashT / 0.28 : 1 - (flashT - 0.28) / 0.72;
+      for (const shard of shards) {
+        if (!shard.falling) continue;
+        shard.vy += 0.7;
+        shard.x += shard.vx;
+        shard.y += shard.vy;
+        shard.rot += shard.vr;
+        placeShard(shard);
       }
-      flash.style.opacity = String(Math.max(0, burst));
 
-      const reveal = smoothstep(clamp((elapsed - cutsEnd - 70) / revealMs, 0, 1));
       const shake = cutShake(elapsed, cutMs, gapMs);
-      const rise = reveal >= 1 ? "" : `translateY(${((1 - reveal) * 14).toFixed(2)}px)`;
-      motion.style.opacity = String(reveal);
-      motion.style.transform = [shake, rise].filter(Boolean).join(" ");
+      motion.style.transform = shake;
       overlay.style.transform = shake;
-      veil.style.opacity = String(1 - reveal);
 
       if (elapsed < total) {
         later(tick, tickMs);
         return;
       }
 
-      motion.style.opacity = "1";
       motion.style.transform = "";
       overlay.remove();
     };
@@ -247,11 +409,12 @@ export function Entrance({ children }: { children: React.ReactNode }) {
 
   return (
     <>
-      <div ref={motionRef} className="stage-motion" style={{ opacity: 0 }}>
+      <div ref={motionRef} className="stage-motion">
         {children}
       </div>
       <div ref={overlayRef} className="slice" aria-hidden="true">
         <div ref={veilRef} className="slice-veil" />
+        <svg ref={glassRef} className="slice-glass" />
         <svg className="slice-seam" viewBox="0 0 100 100" preserveAspectRatio="none">
           {cuts.map((cut, index) => (
             <g key={index} data-cut={index}>
@@ -274,7 +437,6 @@ export function Entrance({ children }: { children: React.ReactNode }) {
             </g>
           ))}
         </svg>
-        <div ref={flashRef} className="slice-flash" />
       </div>
     </>
   );
