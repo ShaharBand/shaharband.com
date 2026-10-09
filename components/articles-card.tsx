@@ -8,7 +8,7 @@ export function ArticlesCard() {
         target="_blank"
         rel="noreferrer"
       >
-        <strong>Stop Using Semi-Trucks to Deliver Pizza in Data Pipelines</strong>
+        <strong>Fluxly: Lightweight Workflow Orchestration</strong>
         <time dateTime="2026-03">Mar 2026</time>
       </a>
       <a

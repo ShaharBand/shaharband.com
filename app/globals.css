@@ -133,12 +133,14 @@ a:focus-visible {
 
 .article {
   display: block;
+  container-type: inline-size;
   text-decoration: none;
 }
 
 .article strong {
   display: block;
-  font-size: 1.12rem;
+  /* Shrinks with the card so the title stays on one line. */
+  font-size: clamp(0.6rem, 4.32cqi, 0.9rem);
   font-weight: 700;
   letter-spacing: -0.03em;
   line-height: 1.25;
