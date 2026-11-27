@@ -7,7 +7,7 @@ export default function Home() {
   return (
     <>
       <Gas>
-        <GasIntro />
+        {/* <GasIntro /> */}
       </Gas>
       <Nav />
       <main className="stage">
