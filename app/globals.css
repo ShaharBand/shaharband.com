@@ -1,10 +1,10 @@
 :root {
-  color-scheme: dark;
-  --ink: #f3f1eb;
-  --muted: #c5cad3;
-  --quiet: #b9b6ae;
-  --line: rgba(255, 255, 255, 0.16);
-  --void: #050506;
+  color-scheme: light;
+  --ground: #fff;
+  --ink: #272625;
+  --muted: #86827d;
+  --line: rgba(0, 0, 0, 0.14);
+  --hover: rgba(0, 0, 0, 0.05);
 }
 
 * {
@@ -15,224 +15,336 @@ html,
 body {
   margin: 0;
   min-height: 100%;
-  background: var(--void);
+  background: var(--ground);
   color: var(--ink);
 }
 
 body {
-  min-height: 100vh;
-  font-family: var(--font-display), sans-serif;
-  background:
-    radial-gradient(980px 520px at 50% 38%, rgba(132, 144, 162, 0.16), transparent 62%),
-    radial-gradient(700px 420px at 50% 115%, rgba(0, 0, 0, 0.55), transparent 55%),
-    linear-gradient(180deg, #0b0d12 0%, #050506 42%, #10131a 100%);
+  font-family: var(--font-sans), system-ui, sans-serif;
 }
 
 a {
   color: inherit;
+  text-decoration: none;
 }
 
 a:focus-visible {
-  outline: 1px solid #fff;
+  outline: 1px solid var(--ink);
   outline-offset: 3px;
+}
+
+.gas {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+/* A frosted pill, so the smoke passing behind it shows through as a soft blur. */
+.nav {
+  position: fixed;
+  right: 0;
+  bottom: 24px;
+  left: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  width: fit-content;
+  height: 52px;
+  margin: 0 auto;
+  padding: 0 8px;
+  border: 1px solid rgba(0, 0, 0, 0.07);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.6);
+  -webkit-backdrop-filter: blur(18px) saturate(1.5);
+  backdrop-filter: blur(18px) saturate(1.5);
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.04),
+    0 12px 32px -14px rgba(0, 0, 0, 0.22);
+  font-size: 14px;
+  letter-spacing: -0.2px;
+  white-space: nowrap;
+}
+
+.nav-menu {
+  position: relative;
+}
+
+.nav-menu-button {
+  justify-content: center;
+  width: 36px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  cursor: pointer;
+  --accent: var(--ink);
+}
+
+.nav-link.nav-menu-button svg {
+  width: 17px;
+  height: 17px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.15;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.nav-menu-button:focus-visible {
+  outline: 1px solid var(--ink);
+  outline-offset: 0;
+}
+
+.nav-menu-button[aria-expanded="true"] {
+  background: var(--hover);
+  color: var(--ink);
+}
+
+/* The same frosted surface as the bar, opening upwards from the tornado button. */
+.nav-panel {
+  position: absolute;
+  bottom: calc(100% + 10px);
+  left: 0;
+  width: min(292px, calc(100vw - 32px));
+  padding: 10px 12px 12px;
+  border: 1px solid rgba(0, 0, 0, 0.07);
+  border-radius: 22px;
+  background: #fff;
+  -webkit-backdrop-filter: blur(18px) saturate(1.5);
+  backdrop-filter: blur(18px) saturate(1.5);
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.04),
+    0 12px 32px -14px rgba(0, 0, 0, 0.22);
+}
+
+.nav-panel-title {
+  margin: 0 0 2px;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: -0.025em;
+}
+
+.nav-setting {
+  display: grid;
+  grid-template-columns: 84px 1fr 48px;
+  align-items: center;
+  gap: 0 8px;
+  margin-top: 1px;
+  font-size: 12px;
+  letter-spacing: -0.2px;
+  cursor: pointer;
+}
+
+.nav-setting span {
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.nav-setting output {
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.nav-setting input {
+  width: 100%;
+  height: 14px;
+  margin: 0;
+  appearance: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+.nav-setting input::-webkit-slider-runnable-track {
+  height: 3px;
+  border-radius: 999px;
+  background: var(--line);
+}
+
+.nav-setting input::-webkit-slider-thumb {
+  width: 12px;
+  height: 12px;
+  margin-top: -4.5px;
+  appearance: none;
+  border: 0;
+  border-radius: 50%;
+  background: var(--ink);
+}
+
+.nav-setting input::-moz-range-track {
+  height: 3px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--line);
+}
+
+.nav-setting input::-moz-range-thumb {
+  width: 12px;
+  height: 12px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--ink);
+}
+
+.nav-links {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  margin: 0 0 0 16px;
+  padding: 0 0 0 10px;
+  list-style: none;
+}
+
+/* A short rule between the name and the links, not a full-height divider. */
+.nav-links::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 1px;
+  height: 16px;
+  transform: translateY(-50%);
+  background: var(--line);
+}
+
+.nav-link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 36px;
+  padding: 0 13px;
+  border-radius: 999px;
+  color: var(--muted);
+  transition:
+    color 0.15s ease,
+    background-color 0.15s ease;
+}
+
+.nav-link svg {
+  width: 15px;
+  height: 15px;
+  fill: currentColor;
+}
+
+/* Each link carries its own --accent: the icon and label take it in full, the chip a wash of it. */
+.nav-link:hover,
+.nav-link:focus-visible {
+  background: var(--hover);
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  color: var(--accent);
+}
+
+.nav-link:focus-visible {
+  outline-offset: 0;
 }
 
 .stage {
   position: relative;
   z-index: 1;
-  width: 100%;
   min-height: 100vh;
+  min-height: 100dvh;
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 2.4rem;
-  padding: 4.5rem 1.25rem;
+  /* Equal top and bottom, so the name sits at the true center and still clears the bar. */
+  padding: 110px 1.25rem;
 }
 
-.identity {
+.hero {
   display: flex;
   flex-direction: column;
   align-items: center;
+  gap: 0.9rem;
   text-align: center;
-  gap: 0.7rem;
 }
 
-.portrait {
-  width: 108px;
-  height: 108px;
-  padding: 3px;
-  border-radius: 50%;
-  background: linear-gradient(145deg, #ffffff 0%, #8b93a1 42%, #f7f7f5 100%);
-  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.45);
-}
-
-.portrait img {
-  width: 100%;
-  height: 100%;
-  display: block;
-  border-radius: 50%;
-  object-fit: cover;
-  background: #111;
-}
-
-.identity h1 {
+.hero h1 {
   margin: 0;
   max-width: 100%;
-  font-family: var(--font-name), "Times New Roman", serif;
-  font-weight: 400;
-  font-size: clamp(1.7rem, 9.2vw, 6.6rem);
-  letter-spacing: -0.03em;
-  line-height: 0.95;
+  font-weight: 600;
+  font-size: clamp(2.5rem, 8.6vw, 6rem);
+  letter-spacing: -0.025em;
+  line-height: 1;
   white-space: nowrap;
 }
 
 .subtitle {
   margin: 0;
-  font-weight: 500;
-  font-size: clamp(1.15rem, 2.5vw, 1.6rem);
+  font-size: clamp(1.05rem, 2.2vw, 1.35rem);
   letter-spacing: -0.02em;
-  color: var(--quiet);
-}
-
-.panel {
-  width: min(760px, 100%);
-  display: grid;
-  grid-template-columns: 1fr;
-  text-align: left;
-  background: rgba(8, 9, 12, 0.72);
-  border: 1px solid var(--line);
-  clip-path: polygon(
-    0 0,
-    calc(100% - 18px) 0,
-    100% 18px,
-    100% 100%,
-    18px 100%,
-    0 calc(100% - 18px)
-  );
-  backdrop-filter: blur(8px);
-}
-
-.panel-col {
-  padding: 1.35rem 1.4rem 1.45rem;
-}
-
-.panel-col + .panel-col {
-  border-top: 1px solid var(--line);
-}
-
-.panel h2 {
-  margin: 0 0 1rem;
-  font-family: var(--font-mono), monospace;
-  font-size: 0.68rem;
-  font-weight: 500;
-  letter-spacing: 0.24em;
-  text-transform: uppercase;
   color: var(--muted);
 }
 
-.article {
-  display: block;
-  container-type: inline-size;
-  text-decoration: none;
+/* On load the name, the line under it and the bar rise into focus, one after another. */
+.hero h1,
+.subtitle,
+.nav {
+  animation: rise 0.9s cubic-bezier(0.2, 0.7, 0.2, 1) backwards;
 }
 
-.article strong {
-  display: block;
-  /* Shrinks with the card so the title stays on one line. */
-  font-size: clamp(0.6rem, 4.32cqi, 0.9rem);
-  font-weight: 700;
-  letter-spacing: -0.03em;
-  line-height: 1.25;
+.subtitle {
+  animation-delay: 0.15s;
 }
 
-.article time {
-  display: block;
-  margin-top: 0.7rem;
-  font-family: var(--font-mono), monospace;
-  font-size: 0.72rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--muted);
+.nav {
+  animation-delay: 0.3s;
 }
 
-.panel-col:hover {
-  background: rgba(255, 255, 255, 0.035);
-}
-
-.article:hover strong,
-.contact-list a:hover .v {
-  color: #fff;
-  text-decoration: underline;
-  text-underline-offset: 4px;
-}
-
-.more:hover {
-  color: #fff;
-}
-
-.more {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.45rem;
-  margin-top: 1.35rem;
-  font-family: var(--font-mono), monospace;
-  font-size: 0.72rem;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  text-decoration: none;
-  color: #d5d8de;
-}
-
-.more b {
-  font-weight: 500;
-  transition: transform 0.25s ease;
-}
-
-.more:hover b {
-  transform: translateX(5px);
-}
-
-.contact-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0.9rem;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.contact-list a {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  gap: 1rem;
-  text-decoration: none;
-}
-
-.contact-list .k {
-  flex: none;
-  font-family: var(--font-mono), monospace;
-  font-size: 0.68rem;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: var(--muted);
-}
-
-.contact-list .v {
-  text-align: right;
-  font-size: 0.95rem;
-  letter-spacing: -0.02em;
-}
-
-@media (min-width: 880px) {
-  .panel {
-    grid-template-columns: 1fr 1fr;
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+    filter: blur(14px);
   }
 
-  .panel-col + .panel-col {
-    border-top: 0;
-    border-left: 1px solid var(--line);
+  to {
+    opacity: 1;
+    transform: none;
+    filter: blur(0);
   }
 }
 
+/* Below this the labels no longer fit on one row, so the links show as round icon buttons. */
+@media (max-width: 680px) {
+  .nav-links {
+    margin-left: 12px;
+    padding-left: 8px;
+  }
+
+  .nav-link {
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    padding: 0;
+  }
+
+  .nav-link svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  /* Hidden from view but still the link's accessible name. */
+  .nav-link span {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+}
+
+
+@media (prefers-reduced-motion: reduce) {
+  .hero h1,
+  .subtitle,
+  .nav {
+    animation: none;
+  }
+
+  .nav-link {
+    transition: none;
+  }
+}

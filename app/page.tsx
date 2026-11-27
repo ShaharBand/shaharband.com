@@ -1,15 +1,18 @@
-import { ArticlesCard } from "@/components/articles-card";
-import { ContactCard } from "@/components/contact-card";
-import { Identity } from "@/components/identity";
+import { Gas } from "@/components/gas/gas";
+import { GasIntro } from "@/components/gas/intro";
+import { Hero } from "@/components/hero";
+import { Nav } from "@/components/nav";
 
 export default function Home() {
   return (
-    <main className="stage">
-      <Identity />
-      <section className="panel" aria-label="Writing and contact">
-        <ArticlesCard />
-        <ContactCard />
-      </section>
-    </main>
+    <>
+      <Gas>
+        {/* <GasIntro /> */}
+      </Gas>
+      <Nav />
+      <main className="stage">
+        <Hero />
+      </main>
+    </>
   );
 }
