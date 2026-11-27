@@ -61,7 +61,7 @@ function createPalette(): (now: number) => Color {
   let color = neon(hue);
   let changedAt = 0;
   return (now) => {
-    if (now - changedAt > gas.hueHoldMs) {
+    if (now - changedAt > 1000 / gas.colorShift) {
       hue = (hue + MIN_HUE_STEP + Math.random() * (1 - 2 * MIN_HUE_STEP)) % 1;
       color = neon(hue);
       changedAt = now;
@@ -144,7 +144,7 @@ export function createSimulation(canvas: HTMLCanvasElement): Simulation | null {
       point: [point.x, point.y],
       // Distances are measured in canvas heights, so the puff is widened on landscape screens
       // and narrowed on portrait ones to stay in proportion with the short side.
-      radius: gas.splatRadius * aspect,
+      radius: gas.size * aspect,
     };
 
     render(gl, programs.splat, velocity.write, {
@@ -173,7 +173,7 @@ export function createSimulation(canvas: HTMLCanvasElement): Simulation | null {
     pass(programs.vorticity, velocity.write, {
       uVelocity: velocity.read,
       uCurl: curl,
-      curl: gas.curl,
+      swirl: gas.swirl,
       dt,
     });
     swap(velocity);
@@ -201,7 +201,7 @@ export function createSimulation(canvas: HTMLCanvasElement): Simulation | null {
       uVelocity: velocity.read,
       uSource: velocity.read,
       dt,
-      dissipation: gas.velocityDissipation,
+      dissipation: gas.motionFade,
     });
     swap(velocity);
 
@@ -209,7 +209,7 @@ export function createSimulation(canvas: HTMLCanvasElement): Simulation | null {
       uVelocity: velocity.read,
       uSource: dye.read,
       dt,
-      dissipation: gas.dyeDissipation,
+      dissipation: gas.colorFade,
     });
     swap(dye);
   }
@@ -285,7 +285,7 @@ export function createSimulation(canvas: HTMLCanvasElement): Simulation | null {
     const now = performance.now();
     const elapsed = Math.min((now - lastSplat) / 1000, MAX_SPLAT_GAP);
     const amount = Math.min(elapsed * gas.brightness + travel * DYE_PER_TRAVEL, MAX_DYE);
-    splat(to, [dx * gas.splatForce, dy * gas.splatForce], palette(now), amount);
+    splat(to, [dx * gas.throw, dy * gas.throw], palette(now), amount);
     lastSplat = now;
     run();
   }

@@ -11,13 +11,13 @@ export const PRESSURE_DECAY = 0.8;
 
 // The knobs the nav menu changes. The simulation reads them on every frame and every stroke.
 export const gas = {
-  curl: 100,
-  velocityDissipation: 1,
-  dyeDissipation: 1.2,
-  splatRadius: 0.003,
-  splatForce: 6000,
-  hueHoldMs: 250,
+  swirl: 40,
+  throw: 6000,
+  size: 0.003,
   brightness: 20,
+  colorFade: 1.2,
+  motionFade: 1,
+  colorShift: 4,
 };
 
 // The simulation never advances further than this in one frame, so a slow frame cannot fling the

@@ -5,21 +5,19 @@ import { gas } from "@/components/gas/settings";
 
 type Knob = keyof typeof gas;
 
-// `view` and `store` remap the slider. `text` is the number with its unit.
+// `text` is the number with its unit. The stored number is the number on the slider.
 const KNOBS: {
   key: Knob;
   label: string;
   min: number;
   max: number;
   step: number;
-  view?: (stored: number) => number;
-  store?: (shown: number) => number;
-  text: (stored: number) => string;
+  text: (value: number) => string;
 }[] = [
-  { key: "curl", label: "Swirl", min: 0, max: 200, step: 1, text: (n) => reading(n) },
-  { key: "splatForce", label: "Throw", min: 500, max: 12000, step: 100, text: (n) => reading(n) },
+  { key: "swirl", label: "Swirl", min: 0, max: 200, step: 1, text: (n) => reading(n) },
+  { key: "throw", label: "Throw", min: 500, max: 12000, step: 100, text: (n) => reading(n) },
   {
-    key: "splatRadius",
+    key: "size",
     label: "Size",
     min: 0.0005,
     max: 0.008,
@@ -28,7 +26,7 @@ const KNOBS: {
   },
   { key: "brightness", label: "Brightness", min: 1, max: 20, step: 0.5, text: (n) => reading(n) },
   {
-    key: "dyeDissipation",
+    key: "colorFade",
     label: "Color fade",
     min: 0.2,
     max: 5,
@@ -36,23 +34,14 @@ const KNOBS: {
     text: (n) => `${reading(n)}/s`,
   },
   {
-    key: "velocityDissipation",
+    key: "motionFade",
     label: "Motion fade",
     min: 0,
     max: 4,
     step: 0.1,
     text: (n) => `${reading(n)}/s`,
   },
-  {
-    key: "hueHoldMs",
-    label: "Color shift",
-    min: 1,
-    max: 25,
-    step: 1,
-    view: (ms) => Math.round(1000 / ms),
-    store: (perSecond) => Math.round(1000 / perSecond),
-    text: (ms) => `${Math.round(1000 / ms)}/s`,
-  },
+  { key: "colorShift", label: "Color shift", min: 1, max: 25, step: 1, text: (n) => `${reading(n)}/s` },
 ];
 
 /** A short reading of a knob: whole numbers stay whole, the rest keep one to three digits. */
@@ -116,11 +105,8 @@ export function GasMenu() {
                 min={knob.min}
                 max={knob.max}
                 step={knob.step}
-                value={knob.view ? knob.view(values[knob.key]) : values[knob.key]}
-                onChange={(event) => {
-                  const shown = Number(event.target.value);
-                  change(knob.key, knob.store ? knob.store(shown) : shown);
-                }}
+                value={values[knob.key]}
+                onChange={(event) => change(knob.key, Number(event.target.value))}
               />
               <output>{knob.text(values[knob.key])}</output>
             </label>
