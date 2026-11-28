@@ -11,12 +11,12 @@ export const PRESSURE_DECAY = 0.8;
 
 // The knobs the nav menu changes. The simulation reads them on every frame and every stroke.
 export const gas = {
-  swirl: 40,
-  throw: 6000,
-  size: 0.003,
+  swirl: 0,
+  throw: 6400,
+  size: 0.0024,
   brightness: 20,
-  colorFade: 1.2,
-  motionFade: 1,
+  colorFade: 1.7,
+  motionFade: 0.4,
   colorShift: 4,
 };
 
